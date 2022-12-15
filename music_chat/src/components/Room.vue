@@ -36,13 +36,13 @@ import ChatWindowVue from './subcomponents/ChatWindow.vue'
         },
         data(){
             return{
-                to_user:'群聊',
+                to_user:'大厅',
                 to_user_avatar:'images/avatar02.jpg',
                 curUserIndex:0,
                 login_user:"百花",
                 login_ava:"images/avatar02.jpg",
                 user_list:[
-                  {username:'群聊', avatar:"images/avatar08.jpg"},
+                  {username:'大厅', avatar:"images/avatar08.jpg"},
                   {username:'test', avatar:"images/avatar06.jpg"}
                 ],
                 bocast_massage:[

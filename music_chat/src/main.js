@@ -3,6 +3,8 @@ import App from './App.vue'
 import './index.css'
 
 import router from './router'
+// 导入 axios
+import axios from 'axios'
 
 //socket.io
 import VueSocketIO from 'vue-3-socket.io'
@@ -11,6 +13,11 @@ import io from 'socket.io-client';
 const app =  createApp(App)
 app.use(router)
 
+// 全局配置 axios
+// 配置请求的根路径
+axios.defaults.baseURL = 'http://localhost:3001'
+// 将 axios 挂载为全局的 $http 自定义属性
+app.config.globalProperties.$http = axios
 
 const socketio = new VueSocketIO({
     debug: true,

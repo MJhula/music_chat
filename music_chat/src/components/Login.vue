@@ -3,6 +3,8 @@
     <div class="title">用户登录</div>
     <p>用户名</p>
     <input type="text" placeholder="请输入用户名" id="username" v-model="username">
+    <!-- <p>密码</p>
+    <input type="text" placeholder="请输入密码" id="username" v-model="username"> -->
     <p>选择头像</p>
     <ul class="avatar" id="login_avatar" ref="ava_ul" >
         <li   v-for="(item, index ) in avatar_list" :key="item.id"  @click="onAvatarChange(index)" :class="{active:index === currentIndex}">
@@ -14,6 +16,7 @@
 </template>
 
 <script>
+import Qs from 'qs'
 
     export default{
         name:'Login',
@@ -45,23 +48,34 @@
             },
 
             //点击登陆
-            onLoginClick(e){
+            async onLoginClick(e){
                 if(!this.username){
                     alert('请输入用户名')
                     return
                 }
-                if(this.username==='群聊'){
+                if(this.username==='大厅'){
                     alert('用户名已经存在')
                     return
                 }
                 // const usern = this.username
                 // const c_avatar = this.choic_ava
                 // 需要告诉socket io服务，登录
-                this.$router.push('/room')
-                localStorage.setItem('usern',this.username)
+                var params = new URLSearchParams();
+                params.append('username',this.username);
+                params.append('password','root123');
+
+                // 1. 通过组件实例 this 访问到全局挂载的 $http 属性，并发起Ajax 数据请求
+                const { data: res } = await this.$http.post('/api/login',params)
+                console.log(res)
+                // 2. 判断请求是否成功
+                if (res.status !== 0) return alert('login fail')
+                // 3. 将请求到的数据存储到 data 中，供页面渲染期间使用
+                localStorage.setItem('usern',this.username) //本地存储部分信息
                 localStorage.setItem('c_avatar',this.choic_ava)
+                this.$router.push('/room')
+                localStorage.setItem('token', res.token)
                 // 模拟存储 Token 的操作
-                return localStorage.setItem('token', 'Bearer xxx')
+                return localStorage.setItem('token', 'Bearer xxx')//本地存储登录信息
             }
         }
     }

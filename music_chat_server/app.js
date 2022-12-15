@@ -1,13 +1,14 @@
-var app = require('express')()
+const express = require('express')
+const app = express()
 var server = require('http').Server(app)
 var io = require('socket.io')(server,{cors:true})
 // var path = require('path')
 // 记录所有已经登录过的用户
-const users = [{username:'群聊', avatar:"images/avatar07.jpg"}]
+const users = [{username:'大厅', avatar:"images/avatar07.jpg"}]
 
 server.listen(3001, () => {
 
-  console.log('服务器启动了')
+  console.log('server running at http://127.0.0.1:3001')
 })
 
 // express处理静态资源
@@ -17,6 +18,49 @@ app.use(require('express').static('public'))
 app.get('/', function (req, res) {
   // res.sendFile(path.join(__dirname, '/index.html'))
   res.redirect('/index.html')
+})
+
+const cors = require('cors')
+app.use(cors())
+
+app.use(express.urlencoded({extended    :    false}))
+// 一定要在路由之前，封装 res.cc 函数
+app.use((req, res, next) => {
+  // status 默认值为 1，表示失败的情况
+  // err 的值，可能是一个错误对象，也可能是一个错误的描述字符串
+  res.cc = function (err, status = 1) {
+    res.send({
+      status,
+      message: err instanceof Error ? err.message : err,
+    })
+  }
+  next()
+})
+
+//配置全局的JWT身份认证中间件
+const config = require('./config')
+const expressJWT = require('express-jwt')
+
+// 通过这个中间件可解析token 
+// 使用 .unless({ path: [/^\/api\//] }) 指定哪些接口不需要进行 Token 的身份认证
+app.use(expressJWT({secret:config.jwtSecreKey}).unless({path:[/^\/api\//]}))
+
+
+// 导入并使用用户登陆的路由模块:
+const userRouter = require('./router/user.js')
+app.use('/api',userRouter)
+// 导入并使用个人中心的路由模块:
+const userinforRouter = require('./router/userinfo')
+app.use('/my', userinforRouter)
+
+// ，如果客户端发送过来的 Token 字符串过期或不合法，会产生一个解析失败的错误，影响项目的正常运行
+// 通过 Express 的错误中间件，捕获这个错误并进行相关的处理
+const joi = require('joi')
+app.use((err, req, res, next)=>{
+    // 数据验证失败
+    if(err instanceof joi.ValidationError) return res.cc(err)
+    if(err.name === 'UnauthorizedError') return res.cc('身份认证失败！')
+    res.cc(err)
 })
 
 io.on('connect', function (socket) {
@@ -72,7 +116,7 @@ io.on('connect', function (socket) {
   // 监听图片聊天信息
   socket.on('sendImage', data => {
     // 广播给所有用户
-    if (data.toName === '群聊') {
+    if (data.toName === '大厅') {
       io.emit('receiveImage', data)
     } else {
       // 广播给指定用户
@@ -115,11 +159,11 @@ io.on('connect', function (socket) {
     //   }
     // }
     var SocketConnections=io.sockets.sockets
-    console.log(io.sockets.sockets)
+    // console.log(io.sockets.sockets)
     SocketConnections.forEach(s=>{
         /* 判断该对象是不是我们需要发送的那个人 */
-      console.log("data:"+data.to)
-      console.log("idid username:"+s.username)
+      // console.log("data:"+data.to)
+      // console.log("idid username:"+s.username)
       if(s.username==data.to){
         /* 发送数据 */
         console.log("idid :"+s.id)

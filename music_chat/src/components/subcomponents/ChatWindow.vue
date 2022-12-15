@@ -124,7 +124,7 @@
         watch:{
           to_user:{
             handler(newto,oldto){
-              if(newto == '群聊'){
+              if(newto == '大厅'){
                 this.msg_list=this.bocast_massage;
               }
               else{
@@ -171,7 +171,7 @@
 
         methods:{
             onSendClick(){
-            if(this.to_user == "群聊"){
+            if(this.to_user == "大厅"){
               this.$socket.emit('sendMessage',{
                 type:'message-box',
                 user:this.login_user,
