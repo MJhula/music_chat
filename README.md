@@ -1,1 +1,2 @@
-# music_chat
+# Music_Chat_Room
+## Full stack
